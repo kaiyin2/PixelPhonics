@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Set the XDG_DATA_DIRS environment variable, which tells GTK where
+# to find its resources
+dir="$(cd "$(dirname "$0")" && pwd)"
+arch=`arch`
+export XDG_DATA_DIRS="$dir/Resources.$arch/share"
+
+# Unquarantine this shell script
+xattr -p com.apple.quarantine "$0" > /dev/null 2>&1
+if [[ $? -eq 0 ]]; then
+    xattr -d com.apple.quarantine "$0"
+fi
+
+# Sign and unquarantine the executable and its dynamic libraries,
+# so MacOS will let it run
+"$dir/signUnquarantine" "$dir" ase100.$arch
+
+# Run the executable
+"$dir/ase100.$arch"

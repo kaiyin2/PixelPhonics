@@ -1,0 +1,130 @@
+#!/usr/bin/perl
+
+# Sign and unquarantine the specified executable and all the libraries
+# it depends on that are in @rpath (assume these are in the specified
+# library).  These need(?) to be signed "inside out", i.e., if A depends
+# on B, must sign B before A.
+
+use English;
+
+if (scalar(@ARGV) != 2) {
+    die "error: usage: $0 <dir> <executable>";
+}
+
+$dir = $ARGV[0];
+$program = $ARGV[1];
+
+# $libDir = "$dir/Resources/lib";
+
+$arch = `arch`;
+chomp($arch);
+$libDir = "$dir/Resources.$arch/lib";
+
+# is the program already signed?
+open(CODESIGN, "codesign -dv \"$dir/$program\" 2>&1 |") || die "can't examine code signature of $dir/$program";
+while (<CODESIGN>) {
+    if (/^Identifier=(.*)/) {
+        if ($1 ne $program) {
+	    # print "$dir/$program is already signed\n";
+	    exit(0);
+	}
+    }
+}
+close(CODESIGN);
+
+&explore("$program");
+
+# foreach $parent (keys(%children)) {
+#     print "* $parent\n";
+#     foreach $child (keys %{$children{$parent}}) {
+#         print "$parent\t->\t$child\n";
+#     }
+# }
+
+while (scalar(keys(%seen)) != 0) {
+    # sign all binaries with no unsigned children
+    @seenKeys = keys(%seen);
+    foreach $f (@seenKeys) {
+	if (scalar(keys %{$children{$f}}) == 0) {
+
+	    if (-e "$dir/$f") {
+		$f1 = "$dir/$f";
+	    } elsif (-e "$libDir/$f") {
+		$f1 = "$libDir/$f";
+	    } else {
+		die "can't find $f";
+	    }
+
+            system("chmod u+w \"$f1\"");
+
+	    # un-quarantine the file, so Gatekeeper doesn't complain about it
+	    system("xattr -p com.apple.quarantine \"$f1\" > /dev/null 2>&1");
+	    if (! $CHILD_ERROR) {
+	        system("xattr -d com.apple.quarantine \"$f1\"");
+	    }
+
+	    # sign the file
+	    system("codesign --force -s - \"$f1\" >& /dev/null") && die "codesign $f1 failed";
+
+	    delete $seen{$f};
+
+	    # remove edges * -> $f
+	    foreach $parent (keys(%children)) {
+		if (defined($children{$parent}{$f})) {
+		    delete $children{$parent}{$f};
+		}
+	    }
+	}
+    }
+}
+
+# explore the specified binary (program or executable) and record the dependencies
+sub explore() {
+    my ($file) = @_;
+
+    my @toExplore;
+
+    # don't explore a file more than once
+    if ($seen{$file}) {
+        return;
+    }
+    $seen{$file} = 1;
+
+    # print "explore $file\n";
+
+    # print "looking in $dir/$file and $libDir/$file\n";
+    if (-e "$dir/$file") {
+        $file1 = "$dir/$file";
+    } elsif (-e "$libDir/$file") {
+        $file1 = "$libDir/$file";
+    } else {
+        die "can't find $file";
+    }
+
+    open(OTOOL, "otool -L \"$file1\" |") || die "can't run otool";
+    <OTOOL>; # skip file name
+
+    while (<OTOOL>) {
+	($lib) = /^\s*(\S+)/;
+	if ($lib =~ /\@rpath/) {
+            $last = $lib;
+            $last =~ s/^.*\///;
+
+	    # skip self dependencies
+	    if ($file ne $last) {
+	        # remember the dependency $file -> $last
+	        if (!defined($children{$file})) {
+	            $children{$file} = {};
+	        }
+	        $children{$file}{$last} = 1;
+	        push @toExplore, $last;
+	    }
+	}
+    }
+    close(OTOOL);
+
+    foreach $f (@toExplore) {
+        &explore($f);
+    }
+
+}
