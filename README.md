@@ -40,8 +40,7 @@ As this repository represents my portfolio copy of the team project, my specific
 ---
 
 ## 📸 Media & Visuals
-*(Note: Replace the placeholder links below with the actual paths to your images in the repository)*
-* `![Gameplay Screenshot](docs/gameplay.png)`
+* ![Gameplay](docs/gameplay.gif)
 * `![Hardware Setup](docs/hardware-setup.jpg)`
 * `![System Architecture Flowchart](docs/architecture.png)`
 
