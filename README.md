@@ -23,11 +23,11 @@ As this repository represents my portfolio copy of the team project, my specific
 
 ## 🛠️ Hardware & Tech Stack
 * **Board:** Altera DE2-115 FPGA
-* **Peripherals:** * VGA Monitor
+* **Peripherals:** VGA Monitor
   * QWERTY Keyboard
   * External Speaker
   * SD Card (Memory)
-* **Languages:** * Verilog (Combinational & Sequential Logic)
+* **Languages:** Verilog (Combinational & Sequential Logic)
   * Assembly Language (System Operations & I/O)
 
 ---
@@ -40,9 +40,9 @@ As this repository represents my portfolio copy of the team project, my specific
 ---
 
 ## 📸 Media & Visuals
-* ![Gameplay](docs/gameplay.gif)
-* `![Hardware Setup](docs/hardware-setup.jpg)`
-* `![System Architecture Flowchart](docs/architecture.png)`
+![Gameplay](docs/gameplay.gif)
+
+![System Architecture Flowchart](docs/architecture.png)`
 
 ---
 
