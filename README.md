@@ -2,6 +2,8 @@
 
 > An FPGA-based educational spelling game built on the Altera DE2-115 board, featuring non-blocking I/O drivers, VGA graphics, and audio feedback.
 
+**Thank you to Lena Abedali, Luke Birchmeier, and Jaryl Sanchez! 🙏**
+
 ---
 
 ## 📖 Overview
@@ -40,8 +42,10 @@ As this repository represents my portfolio copy of the team project, my specific
 ---
 
 ## 📸 Media & Visuals
+* **Gameplay**
 ![Gameplay](docs/gameplay.gif)
 
+* **Development Process**
 ![System Architecture Flowchart](docs/architecture.png)`
 
 ---
